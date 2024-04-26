@@ -1,2 +1,2 @@
-# bank
+# Bank
 bank backend in Go
