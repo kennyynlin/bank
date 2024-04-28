@@ -1,2 +1,2 @@
 # Bank
-bank backend in Go
+A bank backend service in Go
