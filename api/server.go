@@ -23,6 +23,9 @@ func NewServer(store db.Store) *Server {
 			log.Fatal("error registering validation: ", err)
 		}
 	}
+
+	router.POST("/users", server.createUser)
+
 	router.POST("/accounts", server.createAccount)
 	router.GET("/accounts/:id", server.getAccount)
 	router.GET("/accounts", server.listAccounts)
