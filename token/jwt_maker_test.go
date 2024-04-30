@@ -1,7 +1,7 @@
 package token
 
 import (
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	"github.com/kennyynlin/bank/util"
 	"github.com/stretchr/testify/require"
 	"testing"
