@@ -32,7 +32,8 @@ func main() {
 
 	store := db.NewStore(conn)
 	go runGatewayServer(config, store)
-	runGrpcServer(config, store)
+	go runGrpcServer(config, store)
+	runGinServer(config, store)
 
 }
 
@@ -83,7 +84,7 @@ func runGatewayServer(config util.Config, store db.Store) {
 	mux := http.NewServeMux()
 	mux.Handle("/", grpcMux)
 
-	listener, err := net.Listen("tcp", config.HTTPServerAddress)
+	listener, err := net.Listen("tcp", config.GRPCGatewayServerAddress)
 	if err != nil {
 		log.Fatal("cannot create listener: ", err)
 	}
