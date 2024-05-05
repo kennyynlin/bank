@@ -33,6 +33,7 @@ mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/kennyynlin/bank/db/sqlc Store
 
 proto:
+	statik -src=./doc/swagger -dest=./doc
 	rm -f pb/*.go
 	rm -f doc/swagger/*.swagger.json
 	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative \
