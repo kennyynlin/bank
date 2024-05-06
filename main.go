@@ -3,12 +3,18 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/kennyynlin/bank/api"
 	db "github.com/kennyynlin/bank/db/sqlc"
+	_ "github.com/kennyynlin/bank/doc/statik"
 	"github.com/kennyynlin/bank/gapi"
 	"github.com/kennyynlin/bank/pb"
 	"github.com/kennyynlin/bank/util"
+	_ "github.com/lib/pq"
 	"github.com/rakyll/statik/fs"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -16,9 +22,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-
-	_ "github.com/kennyynlin/bank/doc/statik"
-	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -31,6 +34,8 @@ func main() {
 	if err != nil {
 		log.Fatal("cannot connect to db: ", err)
 	}
+
+	runDBMigration(config.MigrationURL, config.DBSource)
 
 	store := db.NewStore(conn)
 	go runGatewayServer(config, store)
@@ -114,4 +119,15 @@ func runGinServer(config util.Config, store db.Store) {
 	if err != nil {
 		log.Fatal("cannot start server: ", err)
 	}
+}
+
+func runDBMigration(migrationURL string, dbSource string) {
+	migration, err := migrate.New(migrationURL, dbSource)
+	if err != nil {
+		log.Fatal("cannot create new migration instance: ", err)
+	}
+	if err := migration.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		log.Fatal("failed to run migration up: ", err)
+	}
+	log.Printf("db migrated successfully")
 }
