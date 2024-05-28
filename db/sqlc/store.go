@@ -2,8 +2,7 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	_ "go.uber.org/mock/mockgen/model"
 )
@@ -17,28 +16,12 @@ type Store interface {
 
 type SQLStore struct {
 	*Queries
-	db *sql.DB
+	connPool *pgxpool.Pool
 }
 
-func NewStore(db *sql.DB) Store {
+func NewStore(connPool *pgxpool.Pool) Store {
 	return &SQLStore{
-		db:      db,
-		Queries: New(db),
+		connPool: connPool,
+		Queries:  New(connPool),
 	}
-}
-
-func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
-	tx, err := store.db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-	q := New(tx)
-	err = fn(q)
-	if err != nil {
-		if rollbackErr := tx.Rollback(); rollbackErr != nil {
-			return fmt.Errorf("tx err: %v, rollback err: %v", err, rollbackErr)
-		}
-		return err
-	}
-	return tx.Commit()
 }
